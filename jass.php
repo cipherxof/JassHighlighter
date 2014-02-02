@@ -105,7 +105,7 @@ class JassCode{
                     switch ($id)
                     {
                         case T_DOC_COMMENT:
-                            $text = "<span style="  . $language_data['STYLE']['COMPILER'] . ">"  . $text . '</span>';
+                            $text = "<span style="  . $language_data['STYLE']['COMPILER']   . ">"   . $text . '</span>';
                             break;
                         case T_COMMENT:
                             if ($text[0] == "#")
@@ -233,7 +233,7 @@ class JassCode{
             
             // append parsed text
             $output .= $text;
-		}
+	}
 		
         // close any un-closed <span>'s
         if ($inError)

@@ -19,3 +19,5 @@ echo $code->parse();
 
 Configuration
 ==========
+
+[Example: vJass](https://github.com/ashinnblunts/jassparser/blob/master/highlighter/languages/vjass.php)

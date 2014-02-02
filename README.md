@@ -7,5 +7,6 @@ Syntax
 ==========
 
 ```php
-$var;
+$code = new JassCode('local real r = 0.5');
+echo $code->parse();
 ```

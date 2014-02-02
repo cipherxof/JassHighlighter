@@ -1,7 +1,7 @@
 JassParser
 ==========
 
-Syntax Highlighter for vJass, cjass, and wurst.
+Efficient Syntax Highlighter for JASS and it's derivatives.
 
 Syntax
 ==========

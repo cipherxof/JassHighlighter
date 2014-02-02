@@ -21,7 +21,7 @@ class JassCode{
     {
 		$this->code	    = $code;
 		$this->language = $lang;
-	}
+    }
     
 	function parse()
     {
@@ -31,12 +31,12 @@ class JassCode{
         
         // require necessary files (if possible)
         require_once($dir."Class.KeywordGroup.php");
-        require(file_exists($fname) ? $fname : $dir . "nolanguage.php");	
-        //require(file_exists($fname) ? $dir . "nolanguage.php" : $fname);
+        //require(file_exists($fname) ? $fname : $dir . "nolanguage.php");	
+        require(file_exists($fname) ? $dir . "nolanguage.php" : $fname);
 			
-		// if language isn't configured properly then return code in plain text
-		if (!isset($language_data['KEYWORDS']))
-			return $this->code;
+        // if language isn't configured properly then return code in plain text
+        if (!isset($language_data['KEYWORDS']))
+            return $this->code;
 		
         $keyword_group = $language_data['KEYWORDS'];
         
@@ -230,7 +230,7 @@ class JassCode{
             $output .= "</span>";
         
 		return $output;
-	}
+    }
 }
 
 ?>

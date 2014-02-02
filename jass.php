@@ -15,6 +15,7 @@
 */
 
 class JassCode{
+
 	public $code, $language;
 	
 	function __construct($code, $lang='vjass')
@@ -31,8 +32,8 @@ class JassCode{
         
         // require necessary files (if possible)
         require_once($dir."Class.KeywordGroup.php");
-        //require(file_exists($fname) ? $fname : $dir . "nolanguage.php");	
-        require(file_exists($fname) ? $dir . "nolanguage.php" : $fname);
+        require(file_exists($fname) ? $fname : $dir . "nolanguage.php");	
+        //require(file_exists($fname) ? $dir . "nolanguage.php" : $fname);
 			
         // if language isn't configured properly then return code in plain text
         if (!isset($language_data['KEYWORDS']))
@@ -59,6 +60,7 @@ class JassCode{
         $contents       = str_replace("<?php", htmlentities("<?php"), $contents);
 		$output         = '';
         $inError        = false; 
+        $inMacroParam   = false; 
         $compileTime    = false;
         
         // remove warnings
@@ -134,11 +136,21 @@ class JassCode{
                         break;
                     case T_DNUMBER: // real
                         $text = "<span style="     . $language_data['STYLE']['VALUE']   . ">"   . $text . '</span>';
-                        break; 
+                        break;
+                    case T_VARIABLE: // textmacro paramaters
+                        $text = "<span style="     . $language_data['STYLE']['VALUE']   . ">"   . $text;
+                        if ($highlight_list[$i + 1] == '$')
+                        {
+                            $text .= '$</span>';
+                            $i++;
+                        }
+                        $text .= '</span>';
+                        break;
                     case T_WHITESPACE: // ignore multiple whitespaces
                         $output .= $text;
                         $highlight_list[$i] = $highlight_list[$i-1];
                         $i++;
+                        
                         goto start; // lol
                     default:
                         break;
@@ -178,7 +190,7 @@ class JassCode{
                     }
                 }
                 // highlight struct members
-                if ($highlight_list[$i-1] == $language_data['IDENTIFIERS']['MEMBER'])
+                elseif ($highlight_list[$i-1] == $language_data['IDENTIFIERS']['MEMBER'])
                 {
                     $text = "<span style=" . $language_data['STYLE']['MEMBER'] . ">"  . $text . '</span>';
                 }

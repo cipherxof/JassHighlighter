@@ -16,3 +16,6 @@ $code = 'package WurstLib';
 $code = new JassCode($code, 'wurst');
 echo $code->parse();
 ```
+
+Configuration
+==========

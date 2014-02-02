@@ -24,8 +24,8 @@ All user defined information is stored inside one variable ($language_data), whi
 
 You can take a look at the examples below.
 
-[Example: vJass](https://github.com/ashinnblunts/jassparser/blob/master/highlighter/languages/vjass.php)
+[Example: vJass](https://github.com/ashinnblunts/jassparser/blob/master/languages/vjass.php)
 
-[Example: cJASS](https://github.com/ashinnblunts/jassparser/blob/master/highlighter/languages/cjass.php)
+[Example: cJASS](https://github.com/ashinnblunts/jassparser/blob/master/languages/cjass.php)
 
-[Example: Wurst](https://github.com/ashinnblunts/jassparser/blob/master/highlighter/languages/wurst.php)
+[Example: Wurst](https://github.com/ashinnblunts/jassparser/blob/master/languages/wurst.php)

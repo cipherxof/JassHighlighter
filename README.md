@@ -20,7 +20,8 @@ echo $code->parse();
 Configuration
 ==========
 
-All user defined information is stored inside one variable ($language_data), which is pretty straight foward to configure. You can take a look at the examples below.
+All user defined information is stored inside one variable ($language_data), which is pretty straight foward to configure. 
+You can take a look at the examples below.
 
 [Example: vJass](https://github.com/ashinnblunts/jassparser/blob/master/highlighter/languages/vjass.php)
 

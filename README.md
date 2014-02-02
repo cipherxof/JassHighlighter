@@ -1,7 +1,7 @@
 JassParser
 ==========
 
-Efficient Syntax Highlighter for JASS and it's derivatives.
+Efficient Syntax Highlighter for JASS and it's derivatives. By default it supports vJass, cJASS, and WurstScript, however you can define more languages.
 
 Syntax
 ==========

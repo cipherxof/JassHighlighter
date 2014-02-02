@@ -1,7 +1,7 @@
 JassParser
 ==========
 
-Efficient Syntax Highlighter for JASS and it's derivatives, coded in PHP. By default it supports vJass, cJASS, and WurstScript, however you can easily define more. It utilizes PHP's built in tokenizer to parse code as fast as possible, and with O(1) keyword lookup.
+Efficient Syntax Highlighter for JASS and it's derivatives, coded in PHP. By default it supports vJass, cJASS, and WurstScript, however you can easily define more. This class also utilizes PHP's built in tokenizer to parse code as fast as possible, and with O(1) complexity.
 
 Syntax
 ==========

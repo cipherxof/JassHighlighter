@@ -32,8 +32,8 @@ class JassCode{
         
             // require necessary files (if possible)
             require_once($dir."Class.KeywordGroup.php");
-            //require(file_exists($fname) ? $fname : $dir . "nolanguage.php");	
-            require(file_exists($fname) ? $dir . "nolanguage.php" : $fname);
+            require(file_exists($fname) ? $fname : $dir . "nolanguage.php");	
+            //require(file_exists($fname) ? $dir . "nolanguage.php" : $fname);
 			
             // if language isn't configured properly then return code in plain text
             if (!isset($language_data['KEYWORDS']))

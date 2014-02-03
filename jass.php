@@ -27,7 +27,7 @@ class JassCode{
 	function parse()
         {
 	    // get the language data
-            $dir   = /*"../" . basename(__DIR__) . */"/includes/highlighter/languages/";
+            $dir   = /*"../" . basename(__DIR__) . */"/languages/";
             $fname = $dir . $this->language . ".php";
         
             // require necessary files (if possible)

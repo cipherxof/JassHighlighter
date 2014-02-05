@@ -27,7 +27,7 @@ class JassCode{
 	function parse()
         {
             $root = dirname(__FILE__);
-        
+            
             // get the language data
             $dir   = $root . '/languages/';
             $fname = $dir  . $this->language . ".php";
@@ -35,7 +35,7 @@ class JassCode{
             // require necessary files (if possible)
             require_once($dir . "Class.KeywordGroup.php");
             require(file_exists($fname) ? $fname : $dir . "nolanguage.php");	
-			
+            
             // if language isn't configured properly then return code in plain text
             if (!isset($language_data['KEYWORDS']))
                 return $this->code;
@@ -188,47 +188,49 @@ class JassCode{
                             
                         }
                     }
-                    // highlight struct members
-                    elseif ($highlight_list[$i-1] == $language_data['IDENTIFIERS']['MEMBER'])
-                    {
-                        $text = "<span style=" . $language_data['STYLE']['MEMBER'] . ">"  . $text . '</span>';
-                    }
-                    // handle custom user defined structs
-                    elseif (in_array($highlight_list[$i-2], $language_data['IDENTIFIERS']['STRUCT']))
-                    {
-                        // add the keyword to the list
-                        $keyword_style[$text] = $language_data['IDENTIFIERS']['STRUCT']['STYLE'];
-                        $text = "<span style=" . $language_data['IDENTIFIERS']['STRUCT']['STYLE'] . ">$text</span>";
-                    }
-                    // handle custom user defined types
-                    elseif (in_array($highlight_list[$i-2], $language_data['IDENTIFIERS']['TYPE']))
-                    {
-                        $keyword_style[$text] = $language_data['IDENTIFIERS']['TYPE']['STYLE'];
-                        $text = "<span style=" . $language_data['IDENTIFIERS']['TYPE']['STYLE'] . ">$text</span>";
-                    }
-                    // check for initializers
-                    elseif ($highlight_list[$i-2] == "initializer" && ($highlight_list[$i-6] == "library" || $highlight_list[$i-6] == "scope"))
-                    {
-                        // set the name of the initializer
-                        $init = $text;
-                        $text = "<a style=\"font-weight: bold; color: #660033;\">$text</a>";
-                    }
-                    // find initializer function
-                    elseif ($highlight_list[$i-1] == "function" && $text == $init)
-                    {
-                        $init = "";
-                        $text = "<a style=\"font-weight: bold; color: #660033;\">$text</a>";
-                    }
-                    // reset the initializer if it wasn't found but the scope is ending
-                    elseif ($init != "" && ($text == "endlibrary" || $text == "endscope"))
-                    {
-                        $init = "";
-                        $text = "<span style=$blockStyle>$text</span>";
-                    }
                     // parse keywords
                     elseif (isset($keyword_style[$text]))
                     {
                         $text = '<span style=' . $keyword_style[$text] . '>' . $text . '</span>';
+                    }
+                    elseif (isset($language_data['IDENTIFIERS'])){
+                        // highlight struct members
+                        if ($highlight_list[$i-1] == $language_data['IDENTIFIERS']['MEMBER'])
+                        {
+                            $text = "<span style=" . $language_data['STYLE']['MEMBER'] . ">"  . $text . '</span>';
+                        }
+                        // handle custom user defined structs
+                        elseif (in_array($highlight_list[$i-2], $language_data['IDENTIFIERS']['STRUCT']))
+                        {
+                            // add the keyword to the list
+                            $keyword_style[$text] = $language_data['IDENTIFIERS']['STRUCT']['STYLE'];
+                            $text = "<span style=" . $language_data['IDENTIFIERS']['STRUCT']['STYLE'] . ">$text</span>";
+                        }
+                        // handle custom user defined types
+                        elseif (in_array($highlight_list[$i-2], $language_data['IDENTIFIERS']['TYPE']))
+                        {
+                            $keyword_style[$text] = $language_data['IDENTIFIERS']['TYPE']['STYLE'];
+                            $text = "<span style=" . $language_data['IDENTIFIERS']['TYPE']['STYLE'] . ">$text</span>";
+                        }
+                        // check for initializers
+                        elseif ($highlight_list[$i-2] == "initializer" && ($highlight_list[$i-6] == "library" || $highlight_list[$i-6] == "scope"))
+                        {
+                            // set the name of the initializer
+                            $init = $text;
+                            $text = "<a style=\"font-weight: bold; color: #660033;\">$text</a>";
+                        }
+                        // find initializer function
+                        elseif ($highlight_list[$i-1] == "function" && $text == $init)
+                        {
+                            $init = "";
+                            $text = "<a style=\"font-weight: bold; color: #660033;\">$text</a>";
+                        }
+                        // reset the initializer if it wasn't found but the scope is ending
+                        elseif ($init != "" && ($text == "endlibrary" || $text == "endscope"))
+                        {
+                            $init = "";
+                            $text = "<span style=$blockStyle>$text</span>";
+                        }
                     }
             }
             

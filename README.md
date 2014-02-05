@@ -20,7 +20,7 @@ echo $code->parse();
 Configuration
 ==========
 
-All user defined information is stored inside one variable ($language_data), which is pretty straight foward to configure. 
+All user defined information is stored inside one variable ($language_data), which is pretty straight foward to configure. If the language definition isn't found then nolanguage.php will be loaded. 
 
 You can take a look at the examples below.
 

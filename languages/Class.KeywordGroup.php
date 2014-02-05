@@ -7,7 +7,7 @@
 		function __construct($keywords, $style, $link=""){
 			if (is_array($keywords))
 				$this->keywords = $keywords;
-			elseif (is_string($array))
+			elseif (is_string($keywords))
 				$this->keywords = array($keywords);
 			else
 				$this->keywords = array('');

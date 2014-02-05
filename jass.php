@@ -26,20 +26,15 @@ class JassCode{
     
 	function parse()
         {
-        $root = dirname(__FILE__);
+            $root = dirname(__FILE__);
         
-        if (!file_exists($root. '\config.php'))
-            return "$root Couldn't find config.php";
-            
-        require_once($root. '\config.php');
+            // get the language data
+            $dir   = $root . '/languages/';
+            $fname = $dir  . $this->language . ".php";
         
-		// get the language data
-        $dir   = $root . $SETTINGS['language_path'];
-        $fname = $dir  . $this->language . ".php";
-        
-        // require necessary files (if possible)
-        require_once($dir . "Class.KeywordGroup.php");
-        require(file_exists($fname) ? $fname : $dir . "nolanguage.php");	
+            // require necessary files (if possible)
+            require_once($dir . "Class.KeywordGroup.php");
+            require(file_exists($fname) ? $fname : $dir . "nolanguage.php");	
 			
             // if language isn't configured properly then return code in plain text
             if (!isset($language_data['KEYWORDS']))

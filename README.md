@@ -7,7 +7,7 @@ Syntax
 ==========
 
 ```php
-// include the library
+// include the class
 require('includes/jass.php');
 
 // basic example

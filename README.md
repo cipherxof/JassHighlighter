@@ -7,6 +7,9 @@ Syntax
 ==========
 
 ```php
+// include the library
+require('includes/jass.php');
+
 // basic example
 $code = new JassCode('local real r = 0.5');
 echo $code->parse();

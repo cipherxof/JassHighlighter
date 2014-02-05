@@ -1,5 +1,5 @@
 <?php
-	require ('jass_keywords.php');
+    require ('jass_keywords.php');
     
     $language_data = Array(
     // Enter the name of the language
@@ -35,10 +35,10 @@
                         new KeywordGroup(explode("|", $operators),  '"font-weight: bold; color: sienna;"'),
                         new KeywordGroup(explode("|", $keywords),   '"font-weight: bold;"'),
                         new KeywordGroup(explode("|", $blocks),     '"font-weight: bold;"'),
-                        new KeywordGroup(explode("|", $natives),	'"color: purple;"', 'http://ashinnblunts.yzi.me/testforum/jassdb_view.php?native='),
-                        new KeywordGroup(explode("|", $bjs),     	'"color: #dd4444;"', 'http://ashinnblunts.yzi.me/testforum/jassdb_view.php?bj='),
+                        new KeywordGroup(explode("|", $natives),    '"color: purple;"', 'http://ashinnblunts.yzi.me/testforum/jassdb_view.php?native='),
+                        new KeywordGroup(explode("|", $bjs),        '"color: #dd4444;"', 'http://ashinnblunts.yzi.me/testforum/jassdb_view.php?bj='),
                         new KeywordGroup(explode("|", $constants),  '"color: #4477aa;"'),
-                        new KeywordGroup(explode("|", $types),  	'"color: #4477aa; font-weight: bold;"'),
+                        new KeywordGroup(explode("|", $types),      '"color: #4477aa; font-weight: bold;"'),
                         new KeywordGroup(explode("|", $bjglobals),  '"color: #660033;"')
                     )
     );

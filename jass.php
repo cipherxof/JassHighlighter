@@ -1,17 +1,14 @@
 <?php
 /* 	JASS Syntax Highlighter
-        By ashinnblunts
+        By TriggerHappy
         
-    This is the JASS version of my Syntax Highlighter. I gave it it's own version because
-    the code was becoming convoluted after trying to make everything configurable and implement
-    specific JASS (and it's derivatives) features.
+    This is the JASS version of my Syntax Highlighter.
     
     Syntax:
         $code = 'call CommentString("")';
         $code = new JassCode($code);
         $code = $code->parse();
-    
-    Contact - ashinnblunts@gmail.com - http://www.hiveworkshop.com/forums/members/triggerhappy/
+
 */
 
 class JassCode{

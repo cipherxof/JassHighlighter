@@ -5,15 +5,15 @@
 class JassCode
 {
 
-	public $code, $language;
-	
-	function __construct($code, $lang='vjass')
+    public $code, $language;
+    
+    function __construct($code, $lang='vjass')
     {
-	    $this->code	    = $code;
-	    $this->language = $lang;
+        $this->code     = $code;
+        $this->language = $lang;
     }
     
-	function parse()
+    function parse()
     {
         $root = dirname(__FILE__);
         
@@ -24,12 +24,12 @@ class JassCode
         if (!file_exists($fname))
             return $this->code;
 
-        require($fname);	
+        require($fname);    
         
         // if language isn't configured properly then return code in plain text
         if (!isset($language_data['KEYWORDS']))
             return $this->code;
-	
+    
         $keyword_group = $language_data['KEYWORDS'];
     
         // count the keyword groups
@@ -44,7 +44,7 @@ class JassCode
         }
         
         // prep variables
-        $contents 	    = html_entity_decode($this->code);
+        $contents       = html_entity_decode($this->code);
         $contents       = str_replace("?>", htmlentities("?>"), $contents);
         $contents       = str_replace("<?php", htmlentities("<?php"), $contents);
         $output         = '';
@@ -58,7 +58,7 @@ class JassCode
         error_reporting(E_ERROR | E_PARSE);
 
         $chunks = explode("\n", $contents);
-        $chunks = array_chunk($chunks, 500);
+        $chunks = array_chunk($chunks, 100);
 
         $len = count($chunks);
 
@@ -211,7 +211,7 @@ class JassCode
                 // append parsed text
                 $output .= $text;
             }   
-        	
+            
             // close any un-closed <span>'s
             if ($inError) $output .= "</span>";
         }

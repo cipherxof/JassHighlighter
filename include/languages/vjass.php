@@ -36,8 +36,8 @@ $language_data = Array(
                     new KeywordGroup(explode("|", $operators),  'JASSoperator'),
                     new KeywordGroup(explode("|", $keywords),   'JASSkeyword'),
                     new KeywordGroup(explode("|", $blocks),     'JASSblock'),
-                    new KeywordGroup(explode("|", $natives),    'JASSnative', 'http://ashinnblunts.yzi.me/testforum/jassdb_view.php?native='),
-                    new KeywordGroup(explode("|", $bjs),        'JASSbj', 'http://ashinnblunts.yzi.me/testforum/jassdb_view.php?bj='),
+                    new KeywordGroup(explode("|", $natives),    'JASSnative'),
+                    new KeywordGroup(explode("|", $bjs),        'JASSbj'),
                     new KeywordGroup(explode("|", $constants),  'JASSconstant'),
                     new KeywordGroup(explode("|", $types),      'JASStype'),
                     new KeywordGroup(explode("|", $bjglobals),  'JASSbjglobal')

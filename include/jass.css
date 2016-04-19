@@ -1,0 +1,18 @@
+.JASSstring{ color: #0000AA; font-style: italic; }
+.JASScomment{ color: #008800; }
+.JASScompiler{ color: #666; }
+.JASSrawcode{ color: #000000; font-weight: bold; text-decoration:underline; }
+.JASSvalue{ color: #0000AA; }
+.JASSmember{ color: #666666; }
+.JASSerror{ background-color: #ffcccc; }
+.JASShighlight { color: #666; }
+.JASSescape { font-weight: bold; font-style: normal; }
+.JASSstruct { color: #666; font-weight: bold; }
+.JASStype { color: #4477aa; font-weight: bold; }
+.JASSoperator { font-weight: bold; color: sienna; }
+.JASSkeyword { font-weight: bold;  }
+.JASSblock { font-weight: bold;  }
+.JASSnative { color: purple; }
+.JASSbj { color: #dd4444; }
+.JASSconstant { color: #4477aa; }
+.JASSbjglobal { color: #660033; }

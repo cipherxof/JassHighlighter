@@ -1,81 +1,86 @@
 <?php
-/* 	JASS Syntax Highlighter
-        By TriggerHappy
-        
-    This is the JASS version of my Syntax Highlighter.
-    
-    Syntax:
-        $code = 'call CommentString("")';
-        $code = new JassCode($code);
-        $code = $code->parse();
 
-*/
+// by TriggerHappy
 
-class JassCode{
+class JassCode
+{
 
 	public $code, $language;
 	
 	function __construct($code, $lang='vjass')
-        {
+    {
 	    $this->code	    = $code;
 	    $this->language = $lang;
-        }
+    }
     
 	function parse()
+    {
+        $root = dirname(__FILE__);
+        
+        // get the language data
+        $dir   = $root . '/include/languages/';
+        $fname = $dir  . $this->language . ".php";
+        
+        if (!file_exists($fname))
+            return $this->code;
+
+        require($fname);	
+        
+        // if language isn't configured properly then return code in plain text
+        if (!isset($language_data['KEYWORDS']))
+            return $this->code;
+	
+        $keyword_group = $language_data['KEYWORDS'];
+    
+        // count the keyword groups
+        $keyword_group_size = count($keyword_group);
+    
+        // split into array with the string as the key
+        for ($i = 0; $i < $keyword_group_size; $i++)
         {
-            $root = dirname(__FILE__);
-            
-            // get the language data
-            $dir   = $root . '/languages/';
-            $fname = $dir  . $this->language . ".php";
+            $size = count($keyword_group[$i]->keywords);
+            for($j = 0; $j < $size; $j++)
+                $keyword_style[$keyword_group[$i]->keywords[$j]] = $keyword_group[$i]->style;
+        }
         
-            // require necessary files (if possible)
-            require_once($dir . "Class.KeywordGroup.php");
-            require(file_exists($fname) ? $fname : $dir . "nolanguage.php");	
-            
-            // if language isn't configured properly then return code in plain text
-            if (!isset($language_data['KEYWORDS']))
-                return $this->code;
-		
-            $keyword_group = $language_data['KEYWORDS'];
-        
-            // count the keyword groups
-	    $keyword_group_size = count($keyword_group);
-        
-            // split into array with the string as the key
-            for ($i = 0; $i < $keyword_group_size; $i++)
-            {
-                $size = count($keyword_group[$i]->keywords);
-                for($j = 0; $j < $size; $j++)
-                    $keyword_style[$keyword_group[$i]->keywords[$j]] = $keyword_group[$i]->style;
-            }
-        
-	    // prep variables
-            $contents 	    = html_entity_decode($this->code);
-            $contents       = str_replace("?>", htmlentities("?>"), $contents);
-            $contents       = str_replace("<?php", htmlentities("<?php"), $contents);
-	    $output         = '';
-            $inError        = false; 
-            $inMacroParam   = false; 
-            $compileTime    = false;
-        
-            // remove warnings
-            error_reporting(E_ERROR | E_PARSE);
-        
-	    // tokenize the code
-	    $tokens   = token_get_all("<?php\n$contents");
-	    $arrSize  = count($tokens);
-        
-            // enable them
-            error_reporting(E_ALL ^ E_NOTICE);
-        
-	    // loop through each token and process it accordingly
-	    for ($i = 1; $i < $arrSize; $i++)
+        // prep variables
+        $contents 	    = html_entity_decode($this->code);
+        $contents       = str_replace("?>", htmlentities("?>"), $contents);
+        $contents       = str_replace("<?php", htmlentities("<?php"), $contents);
+        $output         = '';
+        $inError        = false; 
+        $inMacroParam   = false; 
+        $compileTime    = false;
+    
+        // remove warnings
+        $error_report = error_reporting();
+
+        error_reporting(E_ERROR | E_PARSE);
+
+        $chunks = explode("\n", $contents);
+        $chunks = array_chunk($chunks, 500);
+
+        $len = count($chunks);
+
+        for ($chunk=0; $chunk < $len; $chunk++)
+        {
+            $chunkdata = $chunks[$chunk];
+            $contents = '';
+
+            foreach($chunkdata as $data) 
+                $contents .= "$data\n";
+
+            // tokenize the code
+            $tokens   = token_get_all("<?php\n$contents");
+            $arrSize  = count($tokens);
+
+            // loop through each token and process it accordingly
+            for ($i = 1; $i < $arrSize; $i++)
             {
                 start:
             
-		$token    = $tokens[$i]; 
-		$text     = $token;
+                $token    = $tokens[$i]; 
+                $text     = $token;
                 $old      = $text;
                 $init;
 
@@ -92,8 +97,10 @@ class JassCode{
                     $highlight_list[$i+1] = $tokens[$i+1];
                 }
 
-		if (is_array($token))
-		{
+                $continue = false;
+
+                if (is_array($token))
+                {
                     // if $token is an array, set the id and text to the respective index
                     list($id, $text)      = $token;
                     $old                  = $text;
@@ -103,15 +110,15 @@ class JassCode{
                     switch ($id)
                     {
                         case T_DOC_COMMENT:
-                            $text = "<span style="  . $language_data['STYLE']['COMPILER']   . ">"   . $text . '</span>';
+                            $text = "<span class="  . $language_data['STYLE']['COMPILER']   . ">"   . $text . '</span>';
                             break;
                         case T_COMMENT:
                             if ($text[0] == "#")
-                                $text = "<span style=" . $language_data['STYLE']['COMPILER'] . ">"  . $text . '</span>';
+                                $text = "<span class=" . $language_data['STYLE']['COMPILER'] . ">"  . $text . '</span>';
                             elseif($text[2] == "!")
-                               $text = "<span style="  . $language_data['STYLE']['COMPILER'] . ">"  . $text . '</span>';
+                               $text = "<span class="  . $language_data['STYLE']['COMPILER'] . ">"  . $text . '</span>';
                             else
-                                $text = "<span style=" . $language_data['STYLE']['COMMENT']  . ">"  . $text . '</span>';
+                                $text = "<span class=" . $language_data['STYLE']['COMMENT']  . ">"  . $text . '</span>';
                             break;
                         case T_NUM_STRING:
                         case T_STRING_VARNAME:
@@ -120,21 +127,21 @@ class JassCode{
                             if ($text[0] == "'" && (strlen($text) == 3 || strlen($text) == 6)) // raw codes
                             {
                                 $text = substr($text, 1, strlen($text)-2);
-                                $text = "'<span style=" . $language_data['STYLE']['RAWCODE'] . ">"  . $text . "</span>'";
+                                $text = "'<span class=" . $language_data['STYLE']['RAWCODE'] . ">"  . $text . "</span>'";
                             }
                             else // strings
                             {
-                                $text = "<span style=" . $language_data['STYLE']['STRING']  . ">"   . $text . '</span>';
+                                $text = "<span class=" . $language_data['STYLE']['STRING']  . ">"   . $text . '</span>';
                             }
                             break;
                         case T_LNUMBER: // integer
-                            $text = "<span style="     . $language_data['STYLE']['VALUE']   . ">"   . $text . '</span>';
+                            $text = "<span class="     . $language_data['STYLE']['VALUE']   . ">"   . $text . '</span>';
                             break;
                         case T_DNUMBER: // real
-                            $text = "<span style="     . $language_data['STYLE']['VALUE']   . ">"   . $text . '</span>';
+                            $text = "<span class="     . $language_data['STYLE']['VALUE']   . ">"   . $text . '</span>';
                             break;
                         case T_VARIABLE: // textmacro paramaters
-                            $text = "<span style="     . $language_data['STYLE']['VALUE']   . ">"   . $text;
+                            $text = "<span class="     . $language_data['STYLE']['VALUE']   . ">"   . $text;
                             if ($highlight_list[$i + 1] == '$')
                             {
                                 $text .= '$</span>';
@@ -145,15 +152,18 @@ class JassCode{
                         case T_WHITESPACE: // ignore multiple whitespaces
                             $output .= $text;
                             $highlight_list[$i] = $highlight_list[$i-1];
-                            $i++;
 
-                            goto start; // lol
+                            $continue=true;
+
+                            break;
                         default:
                             break;
                     }
-		}
-            
-               // if the text hasn't been parsed yet
+                }
+                
+                if ($continue) continue;
+
+                // if the text hasn't been parsed yet
                 if ($text == $old)
                 {
                     // check for error highlighting (compileTime for wurst)
@@ -173,74 +183,65 @@ class JassCode{
                         {
                             if ($this->language != 'wurst')
                             {
-                                $text    = "<span style=$errorStyle>";
+                                $text    = "<span class=$errorStyle>";
                                 $inError = true;
                             }
                             else if ($text == $language_data['ERROR-KEY'] && $this->language == 'wurst')
                             {
                                 $compileTime = true;
                                 $inError     = true;
-                                $text        = "<span style=" . $language_data['STYLE']['MEMBER'] . ">" . $language_data['ERROR-KEY'];
+                                $text        = "<span class=" . $language_data['STYLE']['MEMBER'] . ">" . $language_data['ERROR-KEY'];
                             }
                             
                         }
                     }
-                    // parse keywords
-                    elseif (isset($keyword_style[$text]))
+                    elseif (isset($keyword_style[$text])) // parse keywords
                     {
-                        $text = '<span style=' . $keyword_style[$text] . '>' . $text . '</span>';
+                        $text = '<span class=' . $keyword_style[$text] . '>' . $text . '</span>';
                     }
-                    elseif (isset($language_data['IDENTIFIERS'])){
-                        // highlight struct members
-                        if ($highlight_list[$i-1] == $language_data['IDENTIFIERS']['MEMBER'])
+                    elseif (isset($language_data['IDENTIFIERS']))
+                    {
+                        if ($highlight_list[$i-1] == $language_data['IDENTIFIERS']['MEMBER']) // highlight struct members
                         {
-                            $text = "<span style=" . $language_data['STYLE']['MEMBER'] . ">"  . $text . '</span>';
-                        }
-                        // handle custom user defined structs
-                        elseif (in_array($highlight_list[$i-2], $language_data['IDENTIFIERS']['STRUCT']))
-                        {
-                            // add the keyword to the list
-                            $keyword_style[$text] = $language_data['IDENTIFIERS']['STRUCT']['STYLE'];
-                            $text = "<span style=" . $language_data['IDENTIFIERS']['STRUCT']['STYLE'] . ">$text</span>";
-                        }
-                        // handle custom user defined types
-                        elseif (in_array($highlight_list[$i-2], $language_data['IDENTIFIERS']['TYPE']))
-                        {
-                            $keyword_style[$text] = $language_data['IDENTIFIERS']['TYPE']['STYLE'];
-                            $text = "<span style=" . $language_data['IDENTIFIERS']['TYPE']['STYLE'] . ">$text</span>";
-                        }
-                        // check for initializers
-                        elseif ($highlight_list[$i-2] == "initializer" && ($highlight_list[$i-6] == "library" || $highlight_list[$i-6] == "scope"))
-                        {
-                            // set the name of the initializer
-                            $init = $text;
-                            $text = "<a style=\"font-weight: bold; color: #660033;\">$text</a>";
-                        }
-                        // find initializer function
-                        elseif ($highlight_list[$i-1] == "function" && $text == $init)
-                        {
-                            $init = "";
-                            $text = "<a style=\"font-weight: bold; color: #660033;\">$text</a>";
-                        }
-                        // reset the initializer if it wasn't found but the scope is ending
-                        elseif ($init != "" && ($text == "endlibrary" || $text == "endscope"))
-                        {
-                            $init = "";
-                            $text = "<span style=$blockStyle>$text</span>";
+                            $text = "<span class=" . $language_data['STYLE']['MEMBER'] . ">"  . $text . '</span>';
                         }
                     }
-            }
+                }
             
-            // append parsed text
-            $output .= $text;
-	}
-		
-        // close any un-closed <span>'s
-        if ($inError)
-            $output .= "</span>";
+                // append parsed text
+                $output .= $text;
+            }   
+        	
+            // close any un-closed <span>'s
+            if ($inError) $output .= "</span>";
+        }
         
-	return $output;
+        // reset error reporting
+        error_reporting($error_report);
+
+        return $output;
     }
 }
+
+class KeywordGroup
+{
+    
+    public $keywords, $style, $link;
+    
+    function __construct($keywords, $style, $link="")
+    {
+        if (is_array($keywords))
+            $this->keywords = $keywords;
+        elseif (is_string($keywords))
+            $this->keywords = array($keywords);
+        else
+            $this->keywords = array('');
+        if (isset($link))
+            $this->link = $link;
+        
+        $this->style = $style;
+    }
+}
+
 
 ?>

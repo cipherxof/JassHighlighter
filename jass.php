@@ -4,7 +4,6 @@
 
 class JassCode
 {
-
     public $code, $language;
     
     function __construct($code, $lang='vjass')
@@ -24,21 +23,19 @@ class JassCode
         if (!file_exists($fname))
             return $this->code;
 
-        require($fname);    
+        require($fname);
         
-        // if language isn't configured properly then return code in plain text
         if (!isset($language_data['KEYWORDS']))
             return $this->code;
     
         $keyword_group = $language_data['KEYWORDS'];
-    
-        // count the keyword groups
         $keyword_group_size = count($keyword_group);
     
-        // split into array with the string as the key
+        // split keywords into array with the string as the key
         for ($i = 0; $i < $keyword_group_size; $i++)
         {
             $size = count($keyword_group[$i]->keywords);
+            
             for($j = 0; $j < $size; $j++)
                 $keyword_style[$keyword_group[$i]->keywords[$j]] = $keyword_group[$i]->style;
         }
@@ -49,12 +46,12 @@ class JassCode
         $contents       = str_replace("<?php", htmlentities("<?php"), $contents);
         $output         = '';
         $inError        = false; 
+        $inHighlight    = false;
         $inMacroParam   = false; 
         $compileTime    = false;
     
         // remove warnings
         $error_report = error_reporting();
-
         error_reporting(E_ERROR | E_PARSE);
 
         $chunks = explode("\n", $contents);
@@ -77,8 +74,6 @@ class JassCode
             // loop through each token and process it accordingly
             for ($i = 1; $i < $arrSize; $i++)
             {
-                start:
-            
                 $token    = $tokens[$i]; 
                 $text     = $token;
                 $old      = $text;
@@ -114,11 +109,16 @@ class JassCode
                             break;
                         case T_COMMENT:
                             if ($text[0] == "#")
-                                $text = "<span class=" . $language_data['STYLE']['COMPILER'] . ">"  . $text . '</span>';
+                            {
+                            }
                             elseif($text[2] == "!")
+                            {
                                $text = "<span class="  . $language_data['STYLE']['COMPILER'] . ">"  . $text . '</span>';
+                            }
                             else
+                            {
                                 $text = "<span class=" . $language_data['STYLE']['COMMENT']  . ">"  . $text . '</span>';
+                            }
                             break;
                         case T_NUM_STRING:
                         case T_STRING_VARNAME:
@@ -129,7 +129,7 @@ class JassCode
                                 $text = substr($text, 1, strlen($text)-2);
                                 $text = "'<span class=" . $language_data['STYLE']['RAWCODE'] . ">"  . $text . "</span>'";
                             }
-                            else // strings
+                            elseif($text[0] == '"')
                             {
                                 $text = "<span class=" . $language_data['STYLE']['STRING']  . ">"   . $text . '</span>';
                             }
@@ -162,62 +162,68 @@ class JassCode
                 }
                 
                 if ($continue) continue;
+                if ($text != $old) {  $output .= $text; continue; };
 
-                // if the text hasn't been parsed yet
-                if ($text == $old)
+                // check for error highlighting (compileTime for wurst)
+                if ($text == $language_data['ERROR-KEY'] || $compileTime == true)
                 {
-                    // check for error highlighting (compileTime for wurst)
-                    if ($text == $language_data['ERROR-KEY'] || $compileTime == true)
+                    if ($inError) // close error highlighting
                     {
-                        if ($inError) // close error highlighting
+                        if ($compileTime)
                         {
-                            if ($compileTime)
-                            {
-                                $compileTime = false;
-                                $text        = "$text</span>";
-                            }
-                            else $text = "</span>";
-                            $inError = false;
+                            $compileTime = false;
+                            $text        = "$text</span>";
                         }
-                        else
-                        {
-                            if ($this->language != 'wurst')
-                            {
-                                $text    = "<span class=$errorStyle>";
-                                $inError = true;
-                            }
-                            else if ($text == $language_data['ERROR-KEY'] && $this->language == 'wurst')
-                            {
-                                $compileTime = true;
-                                $inError     = true;
-                                $text        = "<span class=" . $language_data['STYLE']['MEMBER'] . ">" . $language_data['ERROR-KEY'];
-                            }
-                            
-                        }
+                        else $text = "</span>";
+                        $inError = false;
                     }
-                    elseif (isset($keyword_style[$text])) // parse keywords
+                    else
                     {
-                        $text = '<span class=' . $keyword_style[$text] . '>' . $text . '</span>';
-                    }
-                    elseif (isset($language_data['IDENTIFIERS']))
-                    {
-                        if ($highlight_list[$i-1] == $language_data['IDENTIFIERS']['MEMBER']) // highlight struct members
+                        if ($this->language != 'wurst')
                         {
-                            $text = "<span class=" . $language_data['STYLE']['MEMBER'] . ">"  . $text . '</span>';
+                            $text    = "<span class=" . $language_data['STYLE']['ERROR'] . ">";
+                            $inError = true;
                         }
+                        else if ($text == $language_data['ERROR-KEY'] && $this->language == 'wurst')
+                        {
+                            $compileTime = true;
+                            $inError     = true;
+                            $text        = "<span class=" . $language_data['STYLE']['MEMBER'] . ">" . $language_data['ERROR-KEY'];
+                        }
+                        
                     }
                 }
-            
-                // append parsed text
+                elseif ($text == $language_data['HIGHLIGHT-KEY'])
+                {
+                    if ($inHighlight) // close error highlighting
+                        $text = "</span>";
+                    else
+                        $text    = "<span class=" . $language_data['STYLE']['HIGHLIGHT'] . ">";
+
+                    $inHighlight=!$inHighlight;
+                }
+                elseif (isset($keyword_style[$text])) // parse keywords
+                {
+                    $text = '<span class=' . $keyword_style[$text] . '>' . $text . '</span>';
+                }
+                elseif (isset($language_data['IDENTIFIERS']))
+                {
+                    if ($highlight_list[$i-1] == $language_data['IDENTIFIERS']['MEMBER']) // highlight struct members
+                    {
+                        $text = "<span class=" . $language_data['STYLE']['MEMBER'] . ">"  . $text . '</span>';
+                    }
+                }
+
                 $output .= $text;
-            }   
-            
-            // close any un-closed <span>'s
-            if ($inError) $output .= "</span>";
+            }
         }
         
         // reset error reporting
         error_reporting($error_report);
+
+        // close any un-closed <span>
+        if ($inError) $output .= "</span>";
+        if ($inHighlight) $output .= "</span>";
 
         return $output;
     }
@@ -225,7 +231,6 @@ class JassCode
 
 class KeywordGroup
 {
-    
     public $keywords, $style, $link;
     
     function __construct($keywords, $style, $link="")

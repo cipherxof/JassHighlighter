@@ -1,0 +1,323 @@
+package Buff
+
+import TimerUtils
+import Maths
+import HashList
+import HashMap
+import OnUnitEnterLeave
+
+/**
+ * Simple abstract class for building buffs
+ *
+ * Example
+ *
+ *	class BuffA extends Buff
+ *		override function getTimeout() returns real
+ *			return 1
+ *		
+ *		override function getTimeout() returns real
+ *			return 1
+ *
+ *		// every 1 second, do 50 damage
+ *		override function onTimeout()
+ *			this.getCaster().damageTarget(this.getTarget(), 50)
+ *		
+ *		// Making default duration to 10 seconds (optional)
+ *		override function apply(unit target) returns boolean
+ *			return this.apply(target, 10)
+ *			
+ *	You can also grab all the buffs that a unit has
+ *	
+ *	Buff.getAllWhereIsCaster(unit)
+ *	or
+ *	Buff.getAllWhereIsTarget(unit)
+ */
+public abstract class Buff
+	/**
+	 * Storing all caster buffs
+	 */
+	protected static HashMap<unit, HashList<Buff>> casterBuffs = new HashMap<unit, HashList<Buff>>()
+
+	/**
+	 * Storing all target buffs
+	 */
+	protected static HashMap<unit, HashList<Buff>> targetBuffs = new HashMap<unit, HashList<Buff>>() 
+
+	/**
+	 *
+	 */
+	protected unit caster
+	
+	/**
+	 *
+	 */
+	protected unit target
+	
+	/**
+	 * Remaining time of the buff (in case if any)
+	 */
+	protected real timeleft
+	
+	/**
+	 *
+	 */
+	protected timer _timer
+	
+	/**
+	 * We do not want to call apply multiple times when a buff is already
+	 * running
+	 */
+	protected boolean running
+	
+	/**
+	 * Get all the buffs of a unit where is the caster
+	 */
+	static function getAllWhereIsCaster(unit whichUnit) returns HLIterator<Buff>
+		return Buff.casterBuffs.get(whichUnit).iterator()
+	
+	/**
+	 * Get how many buffs does a unit have where it is the caster 
+	 */
+	static function countAllWhereIsCaster(unit whichUnit) returns int
+		return Buff.casterBuffs.get(whichUnit).getSize()
+	
+	/**
+	 * Get all the buffs of a unit where is the target
+	 */
+	static function getAllWhereIsTarget(unit whichUnit) returns HLIterator<Buff>
+		return Buff.targetBuffs.get(whichUnit).iterator()
+	
+	/**
+	 * Get how many buffs does a unit have where it is the target 
+	 */
+	static function countAllWhereIsTarget(unit whichUnit) returns int
+		return Buff.targetBuffs.get(whichUnit).getSize()
+	
+	/**
+	 * Safe way to work with HashList (since it doesn't autocreate itself).
+	 * Also, when the size of the HashList is cero destroy it
+	 *
+	 * @param HashMap<unit, HashList<Buff> whichHash It can be casterBuffs or targetBuffs
+	 * @param Buff whichBuff Which Buff is going to be added or removed to the list
+	 * @param unit whichUnit
+	 * @param boolean add Add or remove from the list? (false to remove) 
+	 */
+	static protected function registerBuff(HashMap<unit, HashList<Buff>> whichHash, Buff whichBuff, unit whichUnit, boolean add)
+		HashList<Buff> buffs = whichHash.get(whichUnit) 
+		
+		if (buffs == null)
+			buffs = new HashList<Buff>
+			whichHash.put(whichUnit, buffs)
+		
+		if (add)
+			buffs.add(whichBuff)
+		else
+			buffs.remove(whichBuff)
+			
+		if (buffs.getSize() == 0)
+			whichHash.remove(whichUnit)
+			destroy buffs
+	
+	/**
+	 *
+	 */
+	protected function onTargetChanges(unit previous)
+	
+	/**
+	 *
+	 */
+	protected function onCasterChanges(unit previous)
+	
+	/**
+	 *
+	 */
+	protected function onStart()
+	
+	/**
+	 * Tick tick tick
+	 */
+	protected function onTimeout()
+	
+	/**
+	 * Return true to destroy the instance
+	 */
+	protected function onFinish() returns bool
+		return true
+	
+	/**
+	 *
+	 */
+	function getCaster() returns unit
+		return this.caster
+	
+	/**
+	 * Set a new caster and fire the casterChange event
+	 */	
+	function setCaster(unit caster) returns Buff
+		unit previous
+		
+		if (caster != null)
+			previous = this.caster
+			
+			this.caster = caster
+			
+			if (caster != this.caster)
+				Buff.registerBuff(Buff.casterBuffs, this, previous, false)
+				this.onCasterChanges(previous)
+			
+			Buff.registerBuff(Buff.casterBuffs, this, caster, true)
+			
+			previous = null
+		
+		return this
+	
+	/**
+	 *
+	 */	
+	function getTarget() returns unit
+		return this.target
+	
+	/**
+	 * Set the new target and fire the targetChange event
+	 */	
+	function setTarget(unit target) returns Buff
+		unit previous
+		
+		if (target != null)
+			previous = this.target
+			
+			this.target = target
+			
+			if (previous != null and previous != this.target)
+				Buff.registerBuff(Buff.targetBuffs, this, previous, false)
+				this.onTargetChanges(previous)
+			
+			Buff.registerBuff(Buff.targetBuffs, this, target, true)
+			
+			previous = null
+		
+		return this
+	
+	/**
+	 *
+	 */
+	function getTimeleft() returns real
+		return this.timeleft
+	
+	/**
+	 * Set timeleft (careful, if you set a value lower or equal to 0
+	 * the buff will end up calling finish)
+	 */	
+	function setTimeleft(real timeleft) returns Buff
+		this.timeleft = timeleft
+		
+		if (this.timeleft <= 0)
+			this.finish()
+		
+		return this
+	
+	/**
+	 *
+	 */
+	function getTimeout() returns real
+		return 0
+	
+	/**
+	 * Check if unit can be affected by the buff (true if it can)
+	 */
+	function canBeAffected(unit target) returns bool
+		return true
+		
+	/**
+	 * Finish the buff' effect
+	 */	
+	function finish()
+		bool deallocate = this.onFinish()
+		
+		this._timer.release()
+		
+		this.target = null
+		this.timeleft = 0
+		this._timer = null
+		this.running = false
+		
+		Buff.registerBuff(Buff.casterBuffs, this, this.caster, false)
+		Buff.registerBuff(Buff.targetBuffs, this, this.target, false)
+		
+		if (deallocate)
+			destroy this
+	
+	/**
+	 * Timer auxiliar. Fire the timeout event, update timeleft and start over
+	 */
+	protected static function onTimeoutEx()
+		Buff _buff = GetExpiredTimer().getData() castTo Buff
+		
+		_buff.onTimeout()
+		
+		_buff._timer.pause()
+		_buff._timer.startPeriodic(_buff.getTimeout(), function onTimeoutEx)
+		
+		_buff.setTimeleft(_buff.getTimeleft() - _buff.getTimeout())
+		
+	/**
+	 * Apply buff' effect on unit for a duration (return true if everything
+	 * went ok). Keep in mind that if the buff is already running, it will
+	 * return false and nothing will happend.
+	 */	
+	function apply(unit target, real duration) returns bool
+		if (running)
+			return false
+			
+		if (target == null)
+			return false
+			
+		if (this.caster == null)
+			return false
+		
+		if (this.canBeAffected(target) == false)
+			return false
+		
+		this.setTarget(target)
+
+		this.timeleft = max(0, duration)
+		this.running = true
+		
+		this.onStart()
+		
+		if (this.timeleft > 0)
+			this._timer = getTimer()
+			this._timer.setData(this castTo int)
+			this._timer.startPeriodic(this.getTimeout(), function onTimeoutEx)
+		else
+			this.finish()
+			
+		return true
+	
+	/**
+	 * Apply with a duration of cero
+	 */	
+	function apply(unit target) returns bool
+		return this.apply(target, 0)
+
+function finishBuffs(HLIterator<Buff> buffs)
+	Buff _buff = null
+	
+	while (buffs.hasNext())
+		_buff = buffs.next()
+		_buff.finish()
+		
+		destroy _buff
+		
+	buffs.close()
+
+function finishAllBuffsOfLeaverUnit()
+	unit leaver = getEnterLeaveUnit()
+	
+	finishBuffs(Buff.getAllWhereIsCaster(leaver))
+	finishBuffs(Buff.getAllWhereIsTarget(leaver))
+	
+	leaver = null
+		
+init
+	onLeave(function finishAllBuffsOfLeaverUnit)

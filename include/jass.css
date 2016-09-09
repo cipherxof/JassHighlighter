@@ -4,7 +4,7 @@
 .JASSrawcode{ color: #000000; font-weight: bold; text-decoration:underline; }
 .JASSvalue{ color: #0000AA; }
 .JASSmember{ color: #666666; }
-.JASSerror{ background-color: #ffcccc; }
+.JASSerror{ background-color: #FF0000; color: #FFFFFF; font-weight: bold; }
 .JASShighlight { background-color: #ffff99; }
 .JASSescape { font-weight: bold; font-style: normal; }
 .JASSstruct { color: #666; font-weight: bold; }

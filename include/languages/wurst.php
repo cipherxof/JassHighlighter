@@ -7,6 +7,7 @@ $blocks .=  "|class|while|for|in|break|package|endpackage|protected|import|nativ
 
 $types  .=  "|var|int|bool";
 $values .=  "|new";
+$operators .= "|>>|<<";
 
 $language_data['KEYWORDS'] = Array(
                 new KeywordGroup(explode("|", $values),     'JASSvalue'),

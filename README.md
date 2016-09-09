@@ -1,13 +1,17 @@
 JassHighlighter
 ==========
 
-Syntax Highlighter for Warcraft III's scripting language, JASS2. By default it supports vJass, cJASS, and WurstScript, however you can easily define more. This utilizes PHP's built in tokenizer to parse code quickly.
+Syntax Highlighter for Warcraft III's scripting language, JASS2. 
+
+By default it includes the extensions for vJass, cJASS, and WurstScript, however you can easily define more. 
+
+This utilizes PHP's built in tokenizer to parse code quickly.
 
 Syntax
 ==========
 
 ```php
-require('includes/jass.php');
+require('jass.php');
 
 $code = new JassCode('local real r = 0.5');
 echo $code->parse();

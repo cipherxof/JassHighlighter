@@ -26,15 +26,15 @@ $language_data = Array(
                     ),
 
     'KEYWORDS'      => Array(
-                        new KeywordGroup(explode("|", $values),     'd'),
-                        new KeywordGroup(explode("|", $operators),  'j'),
-                        new KeywordGroup(explode("|", $keywords),   'k'),
-                        new KeywordGroup(explode("|", $blocks),     'l'),
-                        new KeywordGroup(explode("|", $natives),    'm'),
-                        new KeywordGroup(explode("|", $bjs),        'n'),
-                        new KeywordGroup(explode("|", $constants),  'o'),
-                        new KeywordGroup(explode("|", $types),      'p'),
-                        new KeywordGroup(explode("|", $bjglobals),  'q')
+                        new JassKeywordGroup(explode("|", $values),     'd'),
+                        new JassKeywordGroup(explode("|", $operators),  'j'),
+                        new JassKeywordGroup(explode("|", $keywords),   'k'),
+                        new JassKeywordGroup(explode("|", $blocks),     'l'),
+                        new JassKeywordGroup(explode("|", $natives),    'm'),
+                        new JassKeywordGroup(explode("|", $bjs),        'n'),
+                        new JassKeywordGroup(explode("|", $constants),  'o'),
+                        new JassKeywordGroup(explode("|", $types),      'p'),
+                        new JassKeywordGroup(explode("|", $bjglobals),  'q')
                     )
 );
 

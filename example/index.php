@@ -13,10 +13,9 @@
 <?php
 
 // include the class
-require('../jass.php');
+require (__DIR__.'/../jass.php');
 
-//$code = file_get_contents("scripts/Blizzard.j");
-$code = file_get_contents("scripts/unitdex.j");
+$code = file_get_contents("scripts/example.j");
 
 $wrap = '<div style="text-align:left; margin:0px; color:#000; padding:6px; width: 90%; max-width:90%; height:512px; overflow:auto; background-color:#fff; border:1px solid black; white-space: nowrap"><span><div style="font-family:monospace;">';
 

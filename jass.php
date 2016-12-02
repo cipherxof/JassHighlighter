@@ -7,7 +7,7 @@
 
 class JassCode
 {
-    public $code, $language;
+    public $code, $language, $tokens;
     
     function __construct($code, $lang='vjass')
     {
@@ -52,7 +52,7 @@ class JassCode
         error_reporting(E_ERROR | E_PARSE);
 
         // Splitting the code up into chunks significantly reduces memory usage
-        // in some cases. This will however limit the how much can be parsed at 
+        // on large inputs. This will however limit the how much can be parsed at 
         // one time, but shouldn't be an issue.
         $chunks = explode("\n", $contents);
         $chunks = array_chunk($chunks, 1024);
@@ -69,13 +69,13 @@ class JassCode
                 $contents .= "$data\n";
 
             // Run the current chunk through the tokenizer.
-            $tokens      = token_get_all("<?php\n$contents");
-            $token_count = count($tokens);
+            $this->tokens = token_get_all("<?php\n$contents");
+            $token_count  = count($this->tokens);
 
             // Loop through each token and highlight it according to the language data.
             for ($i = 1; $i < $token_count; $i++)
             {
-                $token = $tokens[$i]; 
+                $token = $this->tokens[$i];
                 $text  = $token;
                 $old   = $text;
 
@@ -87,7 +87,7 @@ class JassCode
                 {
                     list($id, $text) = $token;
                     $old = $text;
-                
+
                     switch ($id)
                     {
                         case T_DOC_COMMENT:
@@ -95,10 +95,8 @@ class JassCode
 
                             break;
                         case T_COMMENT:
-                            if ($text[2] == "!")
-                               $text = "<span class=" . $language_data['STYLE']['COMPILER'] . ">"  . $text . '</span>';
-                            else
-                                $text = "<span class=" . $language_data['STYLE']['COMMENT'] . ">"  . $text . '</span>';
+                            $cmntype = ($text[2] == "!" ? $language_data['STYLE']['COMPILER'] : $language_data['STYLE']['COMMENT']);
+                            $text    = "<span class=$cmntype>$text</span>";
 
                             break;
                         case T_NUM_STRING:
@@ -106,14 +104,9 @@ class JassCode
                         case T_CONSTANT_ENCAPSED_STRING:
                         case T_ENCAPSED_AND_WHITESPACE:
                             if ($text[0] == "'" && (strlen($text) == 3 || strlen($text) == 6)) // raw codes
-                            {
-                                $text = substr($text, 1, strlen($text)-2);
-                                $text = "'<span class=" . $language_data['STYLE']['RAWCODE'] . ">"  . $text . "</span>'";
-                            }
-                            elseif($text[0] == '"')
-                            {
+                                $text = "'<span class=" . $language_data['STYLE']['RAWCODE'] . ">"  . substr($text, 1, strlen($text)-2) . "</span>'";
+                            elseif($text[0] != "'") // strings
                                 $text = "<span class=" . $language_data['STYLE']['STRING']  . ">"   . $text . '</span>';
-                            }
 
                             break;
                         case T_LNUMBER: // integer
@@ -127,7 +120,7 @@ class JassCode
                         case T_VARIABLE: // textmacro paramaters
                             $text = "<span class="     . $language_data['STYLE']['VALUE']   . ">"   . $text;
 
-                            if (JassCode::get_token($tokens, $i+1) == '$')
+                            if ($this->getToken($i+1) == '$')
                             {
                                 $text .= '$</span>';
                                 $i++;
@@ -151,8 +144,15 @@ class JassCode
                 if ($continue) continue;
                 if ($text != $old) {  $output .= $text; continue; };
 
+                // Fix a bug where sometimes the quotes in a string won't get highlighted
+                $n=$this->getTokenName($i);
+                $t=T_ENCAPSED_AND_WHITESPACE;
+                if ($n == '"' && ($this->getTokenType($i + 1) == $t || $this->getTokenType($i - 1) == $t))
+                {
+                    $text = "<span class=" . $language_data['STYLE']['STRING']  . ">"  . $text . '</span>';
+                }
                 // Check for error highlighting (compileTime for wurst)
-                if ($text == $language_data['ERROR-KEY'] || $compileTime == true)
+                elseif ($text == $language_data['ERROR-KEY'] || $compileTime == true)
                 {
                     if ($in_error) // close error highlighting
                     {
@@ -193,8 +193,9 @@ class JassCode
                 }
                 elseif (isset($language_data['IDENTIFIERS']))
                 {
-                    if (JassCode::get_token($tokens, $i-1) == $language_data['IDENTIFIERS']['MEMBER']) // highlight struct members
+                    if ($this->tokens[$i-1] == $language_data['IDENTIFIERS']['MEMBER']) // highlight struct members
                     {
+
                         $text = "<span class=" . $language_data['STYLE']['MEMBER'] . ">"  . $text . '</span>';
                     }
                 }
@@ -213,26 +214,40 @@ class JassCode
         return $output;
     }
 
-    private static function get_token($tokens, $index)
+    public function getToken($index)
     {
         $value = '';
 
-        if (is_array($tokens[$index]))
+        if (is_array($this->tokens[$index]))
         {
-            $value = (list($v1, $v2) = $tokens[$i+$index]);
-            $value = $v2;
+            $value = (list($v1, $v2) = $this->tokens[$i+$index]);
+            return $value;
         }
         else
         {
-            $value = $tokens[$index];
+            $value = $this->tokens[$index];
         }
 
         return $value;
     }
 
+    private function getTokenName($index)
+    {
+        $token = $this->getToken($index);
+
+        return (is_array($token) ? $token[1] : $token);
+    }
+
+    private function getTokenType($index)
+    {
+        $token = $this->getToken($index);
+        
+        return (is_array($token) ? $token[0] : false);
+    }
+
 }
 
-class KeywordGroup
+class JassKeywordGroup
 {
     public $keywords, $style, $link;
     

@@ -1,5 +1,5 @@
 <?php
-require ('vjass.php');
+require (__DIR__.'/../vjass.php');
 
 $blocks .=  "|class|while|for|in|break|package|endpackage|protected|import|nativetype|use|abstract|override" .
             "|immutable|it|construct|ondestroy|destroy|init|castTo|tuple|div|mod|let|from|to|downto|step|endpackage|skip|instanceof" .
@@ -10,13 +10,13 @@ $values .=  "|new";
 $operators .= "|>>|<<";
 
 $language_data['KEYWORDS'] = Array(
-                new KeywordGroup(explode("|", $values),     'JASSvalue'),
-                new KeywordGroup(explode("|", $operators),  'JASSoperator'),
-                new KeywordGroup(explode("|", $keywords),   'JASSkeyword'),
-                new KeywordGroup(explode("|", $blocks),     'JASSblock'),
-                new KeywordGroup(explode("|", $natives),    'JASSnative'),
-                new KeywordGroup(explode("|", $bjs),        'JASSbj'),
-                new KeywordGroup(explode("|", $constants),  'JASSconstant'),
-                new KeywordGroup(explode("|", $types),      'JASStype'),
-                new KeywordGroup(explode("|", $bjglobals),  'JASSbjglobal'));
+                new JassKeywordGroup(explode("|", $values),     'JASSvalue'),
+                new JassKeywordGroup(explode("|", $operators),  'JASSoperator'),
+                new JassKeywordGroup(explode("|", $keywords),   'JASSkeyword'),
+                new JassKeywordGroup(explode("|", $blocks),     'JASSblock'),
+                new JassKeywordGroup(explode("|", $natives),    'JASSnative'),
+                new JassKeywordGroup(explode("|", $bjs),        'JASSbj'),
+                new JassKeywordGroup(explode("|", $constants),  'JASSconstant'),
+                new JassKeywordGroup(explode("|", $types),      'JASStype'),
+                new JassKeywordGroup(explode("|", $bjglobals),  'JASSbjglobal'));
 ?>

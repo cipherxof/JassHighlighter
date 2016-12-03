@@ -59,6 +59,7 @@ class JassCode
 
         $len    = count($chunks);
         $output = '';
+        $inStr  = false;
 
         for ($chunk=0; $chunk < $len; $chunk++)
         {
@@ -86,6 +87,7 @@ class JassCode
                 if (is_array($token))
                 {
                     list($id, $text) = $token;
+                    $text = htmlspecialchars($text);
                     $old = $text;
 
                     switch ($id)
@@ -99,9 +101,6 @@ class JassCode
                             $text    = "<span class=$cmntype>$text</span>";
 
                             break;
-                        case T_NUM_STRING:
-                        case T_STRING_VARNAME:
-                        case T_CONSTANT_ENCAPSED_STRING:
                         case T_ENCAPSED_AND_WHITESPACE:
                             if ($text[0] == "'" && (strlen($text) == 3 || strlen($text) == 6)) // raw codes
                                 $text = "'<span class=" . $language_data['STYLE']['RAWCODE'] . ">"  . substr($text, 1, strlen($text)-2) . "</span>'";
@@ -118,21 +117,22 @@ class JassCode
 
                             break;
                         case T_VARIABLE: // textmacro paramaters
-                            $text = "<span class="     . $language_data['STYLE']['VALUE']   . ">"   . $text;
-
-                            if ($this->getToken($i+1) == '$')
+                            if (!$inStr)
                             {
-                                $text .= '$</span>';
-                                $i++;
-                            }
+                                $text = "<span class="     . $language_data['STYLE']['VALUE']   . ">"   . $text;
 
-                            $text .= '</span>';
+                                if ($this->getToken($i+1) == '$')
+                                {
+                                    $text .= '$</span>';
+                                    $i++;
+                                }
+
+                                $text .= '</span>';
+                            }
 
                             break;
                         case T_WHITESPACE: // ignore multiple whitespaces
                             $output .= $text;
-                            $tokens[$i] = $tokens[$i-1];
-
                             $continue=true;
 
                             break;
@@ -140,19 +140,28 @@ class JassCode
                             break;
                     }
                 }
+                else
+                {
+                    $text = htmlspecialchars($text);
+
+                    // Fixes bugs that can occur pwith hp variables in strings
+                    if (!$inStr && $old[0] == '"')
+                    {
+                        $inStr = !$inStr;
+                        $text  = "<span class=" . $language_data['STYLE']['STRING']  . ">" . $text;
+                    }
+                    elseif ($inStr && $old[strlen($old)-1] == '"')
+                    {
+                        $inStr = !$inStr;
+                        $text  = "$text</span>";
+                    }
+                }
                 
                 if ($continue) continue;
-                if ($text != $old) {  $output .= $text; continue; };
+                if ($text != $old || $inStr) {  $output .= $text; continue; };
 
-                // Fix a bug where sometimes the quotes in a string won't get highlighted
-                $n=$this->getTokenName($i);
-                $t=T_ENCAPSED_AND_WHITESPACE;
-                if ($n == '"' && ($this->getTokenType($i + 1) == $t || $this->getTokenType($i - 1) == $t))
-                {
-                    $text = "<span class=" . $language_data['STYLE']['STRING']  . ">"  . $text . '</span>';
-                }
                 // Check for error highlighting (compileTime for wurst)
-                elseif ($text == $language_data['ERROR-KEY'] || $compileTime == true)
+                if ($text == $language_data['ERROR-KEY'] || $compileTime == true)
                 {
                     if ($in_error) // close error highlighting
                     {

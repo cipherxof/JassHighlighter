@@ -21,7 +21,7 @@ $wrap = '<div style="text-align:left; margin:0px; color:#000; padding:6px; width
 
 $time_start = microtime(true);
 
-$code = new JassCode($code, 'wurst');
+$code = new JassCode($code, 'vjass');
 $code = $wrap . '<pre>' . $code->parse() . '</pre></div></span></div>';
 
 $time_end = microtime(true);

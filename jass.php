@@ -94,7 +94,7 @@ class JassCode
                     $text = htmlspecialchars($text);
 
                     if ($inStr)
-                        $id = -1; // go to default
+                        $id = T_WHITESPACE; // go to default
 
                     switch ($id)
                     {
@@ -180,18 +180,15 @@ class JassCode
 
                     $in_highlight = !$in_highlight;
                 }
+                // highlight struct members
+                elseif (isset($language_data['IDENTIFIERS']) && $this->tokens[$i-1] == $language_data['IDENTIFIERS']['MEMBER'])
+                {
+                    $text = "<span class=" . $language_data['STYLE']['MEMBER'] . ">"  . $text . '</span>';
+                }
                 // parse keywords
                 elseif (!$in_error && isset($keyword_style[$old]))
                 {
                     $text = '<span class=' . $keyword_style[$old] . '>' . $text . '</span>';
-                }
-                // highlight struct members
-                elseif (isset($language_data['IDENTIFIERS']))
-                {
-                    if ($this->tokens[$i-1] == $language_data['IDENTIFIERS']['MEMBER'])
-                    {
-                        $text = "<span class=" . $language_data['STYLE']['MEMBER'] . ">"  . $text . '</span>';
-                    }
                 }
 
                 $output .= $text;

@@ -15,11 +15,14 @@ class JassCode
         $this->language = $lang;
     }
 
-    function parse()
+    function parse($incPath=null)
     {
         // Try to load the language data file.
-        $fname = dirname(__FILE__) . '/include/languages/'  . $this->language . ".php";
-        
+        if ($incPath == null)
+            $incPath = dirname(__FILE__) . '/include';
+
+        $fname = "$incPath/languages/" . $this->language . ".php";
+
         if (!file_exists($fname))
             return $this->code;
 
@@ -87,24 +90,31 @@ class JassCode
                 if (is_array($token))
                 {
                     list($id, $text) = $token;
+                    $old  = $text;
                     $text = htmlspecialchars($text);
-                    $old = $text;
+
+                    if ($inStr)
+                        $id = -1; // go to default
 
                     switch ($id)
                     {
-                        case T_DOC_COMMENT:
+                        case T_DOC_COMMENT: // doc style comments
                             $text = "<span class=" . $language_data['STYLE']['COMPILER'] . ">" . $text . '</span>';
 
                             break;
-                        case T_COMMENT:
+                        case T_COMMENT: // comment or preprocessor directives
                             $cmntype = ($text[2] == "!" ? $language_data['STYLE']['COMPILER'] : $language_data['STYLE']['COMMENT']);
                             $text    = "<span class=$cmntype>$text</span>";
 
                             break;
-                        case T_ENCAPSED_AND_WHITESPACE:
-                            if ($text[0] == "'" && (strlen($text) == 3 || strlen($text) == 6)) // raw codes
+                        case T_CONSTANT_ENCAPSED_STRING:
+                        case T_ENCAPSED_AND_WHITESPACE: // raw codes & strings
+
+                            // raw codes
+                            if ($text[0] == "'" && (strlen($text) == 3 || strlen($text) == 6))
                                 $text = "'<span class=" . $language_data['STYLE']['RAWCODE'] . ">"  . substr($text, 1, strlen($text)-2) . "</span>'";
-                            elseif($text[0] != "'") // strings
+                             // strings
+                            elseif($text[0] != "'")
                                 $text = "<span class=" . $language_data['STYLE']['STRING']  . ">"   . $text . '</span>';
 
                             break;
@@ -117,26 +127,24 @@ class JassCode
 
                             break;
                         case T_VARIABLE: // textmacro paramaters
-                            if (!$inStr)
+                            $text = "<span class="     . $language_data['STYLE']['VALUE']   . ">"   . $text;
+
+                            if ($this->getToken($i+1) == '$')
                             {
-                                $text = "<span class="     . $language_data['STYLE']['VALUE']   . ">"   . $text;
-
-                                if ($this->getToken($i+1) == '$')
-                                {
-                                    $text .= '$</span>';
-                                    $i++;
-                                }
-
-                                $text .= '</span>';
+                                $text .= '$</span>';
+                                $i++;
                             }
 
-                            break;
-                        case T_WHITESPACE: // ignore multiple whitespaces
-                            $output .= $text;
-                            $continue=true;
+                            $text .= '</span>';
 
                             break;
+                        case T_WHITESPACE:  
+                            $output  .= $text;
+                            $continue = true; // fixes double whitespace
+                            break;
                         default:
+                            $continue = false;
+
                             break;
                     }
                 }
@@ -144,7 +152,7 @@ class JassCode
                 {
                     $text = htmlspecialchars($text);
 
-                    // Fixes bugs that can occur pwith hp variables in strings
+                    // Fixes bugs that can occur with php variables in strings
                     if (!$inStr && $old[0] == '"')
                     {
                         $inStr = !$inStr;
@@ -154,41 +162,17 @@ class JassCode
                     {
                         $inStr = !$inStr;
                         $text  = "$text</span>";
-                    }
+                    }   
                 }
                 
                 if ($continue) continue;
-                if ($text != $old || $inStr) {  $output .= $text; continue; };
 
-                // Check for error highlighting (compileTime for wurst)
-                if ($text == $language_data['ERROR-KEY'] || $compileTime == true)
+                // Check for highlighting 
+                if ($text == $language_data['ERROR-KEY'])
                 {
-                    if ($in_error) // close error highlighting
-                    {
-                        if ($compileTime)
-                        {
-                            $compileTime = false;
-                            $text        = "$text</span>";
-                        }
-                        else $text = "</span>";
+                    $text = ($in_error ? "</span>" : "<span class=" . $language_data['STYLE']['ERROR'] . ">");
 
-                        $in_error = false;
-                    }
-                    else
-                    {
-                        if ($this->language != 'wurst')
-                        {
-                            $in_error = true;
-                            $text     = "<span class=" . $language_data['STYLE']['ERROR'] . ">";
-                        }
-                        else if ($text == $language_data['ERROR-KEY'] && $this->language == 'wurst')
-                        {
-                            $compileTime = true;
-                            $in_error    = true;
-                            $text        = "<span class=" . $language_data['STYLE']['MEMBER'] . ">" . $language_data['ERROR-KEY'];
-                        }
-                        
-                    }
+                    $in_error = !$in_error;
                 }
                 elseif ($text == $language_data['HIGHLIGHT-KEY'])
                 {
@@ -196,15 +180,16 @@ class JassCode
 
                     $in_highlight = !$in_highlight;
                 }
-                elseif (!$in_error && isset($keyword_style[$text])) // parse keywords
+                // parse keywords
+                elseif (!$in_error && isset($keyword_style[$old]))
                 {
-                    $text = '<span class=' . $keyword_style[$text] . '>' . $text . '</span>';
+                    $text = '<span class=' . $keyword_style[$old] . '>' . $text . '</span>';
                 }
+                // highlight struct members
                 elseif (isset($language_data['IDENTIFIERS']))
                 {
-                    if ($this->tokens[$i-1] == $language_data['IDENTIFIERS']['MEMBER']) // highlight struct members
+                    if ($this->tokens[$i-1] == $language_data['IDENTIFIERS']['MEMBER'])
                     {
-
                         $text = "<span class=" . $language_data['STYLE']['MEMBER'] . ">"  . $text . '</span>';
                     }
                 }

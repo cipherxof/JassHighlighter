@@ -16,8 +16,8 @@ library Example
         local integer invalidRawCode    = 'ab'
         local integer valudRawCode      = 'a'   
 
-        // you can highlight text with @ or `
-        set @string@ `test` = "new value"
+        // you can highlight text with : or `
+        set :string: `test` = "new value"
 
         if (GetPlayerName(Player(0)) == "TriggerHappy") then
             call CreateUnit(Player(0), 'hfoo', 0, 0, 270)

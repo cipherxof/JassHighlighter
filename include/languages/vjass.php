@@ -2,14 +2,12 @@
 
 require (__DIR__.'/../jass_keywords.php');
 
-$language_data = Array(
-    'ERROR-KEY'     => '@',
+$language_data = array(
+    'ERROR-KEY'     => ':',
     'HIGHLIGHT-KEY' => '`',
 
     'IDENTIFIERS'   => Array(
-                        'MEMBER'  => '.',
-                        'STRUCT'  => array('STYLE' => 'JASSstruct' , "struct", "module", "keyword"),
-                        'TYPE'    => array('STYLE' => 'JASStypebold', "type")
+                        'MEMBER'  => '.'
                     ),
                                     
                     // Here you can define the styles of each element
